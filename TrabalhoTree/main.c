@@ -25,6 +25,7 @@ typedef struct No{
 No * raiz;
 
 // ASSINATURAS DAS FUNÇÕES
+int menu();
 ContaB * novaConta();
 No * iniciarArvore();
 No * iniciarNo(ContaB * conta);
@@ -33,7 +34,8 @@ No * removeNodo(No * raiz, ContaB * conta);
 No * carregarArqs(No * raiz);
 void caminhamento_em_ordem(No *nodo);
 ContaB * buscaConta(No *nodo);
-ContaB * buscar(No *nodo, int codigo);
+ContaB * buscar(No * nodo, int codigo);
+int calcAltura(No * raiz);
 
 
 // MAIN
@@ -46,18 +48,34 @@ main(void){
 	caminhamento_em_ordem(raiz);
 	
 	ContaB * conta = novaConta();
-	conta = buscaConta(raiz);
+	printf("\nA altura da arvore é: %d", calcAltura(raiz));
 	
-	if(conta)
-		printf("Codigo: %d  -  Nome: %s  -  Saldo: %.2f", conta->codigo, conta->nome, conta->saldo);
-	    
-	raiz = removeNodo(raiz, conta);
-	
-	
-	caminhamento_em_ordem(raiz);   
 }
 
-// FUNÃ‡Ã•ES
+// FUNÇÕES
+
+int menu(){
+	printf("1 - Exibir altura da arvore\n"\
+		   "2 - Exibir nivel de um no\n"\
+		   "3 - Verificar se arvore eh binaria\n"\
+		   "4 - Verificar se arvore eh binaria e completa\n"\
+		   "5 - Contar nos\n"\
+		   "6 - Imprimir(Descrescente)\n"\
+		   "7 - Imprimir(Crescente)\n"\
+		   "8 - Buscar conta\n"\
+		   "9 - Inserir conta\n"\
+		   "10 - Excluir conta\n"\
+		   "11 - Arvore Similar\n"\
+		   "12 - Buscar em Hash\n"\
+		   "0 - Sair\n"\
+		   "Escolha sua opcao: ");
+	int opt;
+	do{
+		scanf("%d", opt);
+	}while(opt < 0 || opt > 12);
+	
+	return opt;
+}
 
 ContaB * novaConta(){
 	ContaB * nova = (ContaB*) malloc(sizeof(ContaB));
@@ -143,7 +161,7 @@ No * carregarArqs(No * raiz){
 	// ABRINDO O ARQUIVO
 	
 	FILE * arqs;
-	arqs = fopen ("DadosBancoPulini.txt", "r");
+	arqs = fopen ("../DadosBancoPulini.txt", "r");
 	
 	// TESTANDO O ARQUIVO
 	
@@ -216,11 +234,11 @@ void caminhamento_em_ordem(No *nodo){
 	if (nodo != NULL){
 		if (nodo->pai != NULL){
 			caminhamento_em_ordem(nodo->esq);
-	   		printf("\n\tNodo:(%d) |--| Pai:(%d).", nodo->conta->codigo, nodo->pai->conta->codigo);
+	   		printf("\tNodo:(%d) |--| Pai:(%d).\n", nodo->conta->codigo, nodo->pai->conta->codigo);
 	   		caminhamento_em_ordem(nodo->dir);
 	   }else{
 	   		caminhamento_em_ordem(nodo->esq);
-	   		printf("\n\tNodo:(%d) |--| Pai:(NULL).", nodo->conta->codigo);
+	   		printf("\tNodo:(%d) |--| Pai:(NULL).\n", nodo->conta->codigo);
 	   		caminhamento_em_ordem(nodo->dir);	
 	   }   
 	}
@@ -234,7 +252,7 @@ ContaB * buscaConta(No *nodo){
 	} 
 	else {		
 		int codigo;
-		printf("Insira o codigo da conta: ");
+		printf("\nInsira o codigo da conta: ");
 		scanf("%d", &codigo);
 		
 		return buscar(nodo, codigo);			
@@ -257,5 +275,16 @@ ContaB * buscar(No *nodo, int codigo){
 		buscar(nodo->dir, codigo);
 	}
 	
+}
+
+int calcAltura (No * raiz) {
+   if (!raiz) 
+      return -1; // altura da árvore vazia
+   else {
+      int he = calcAltura(raiz->esq);
+      int hd = calcAltura(raiz->dir);
+      if (he < hd) return hd + 1;
+      else return he + 1;
+   }
 }
 
