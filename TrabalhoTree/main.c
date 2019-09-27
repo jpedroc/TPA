@@ -36,6 +36,8 @@ void caminhamento_em_ordem(No *nodo);
 ContaB * buscaConta(No *nodo);
 ContaB * buscar(No * nodo, int codigo);
 int calcAltura(No * raiz);
+int verificarEstBinaria(No * raiz);
+int nivelConta(No * raiz, ContaB * conta);
 
 
 // MAIN
@@ -47,8 +49,7 @@ main(void){
 	
 	caminhamento_em_ordem(raiz);
 	
-	ContaB * conta = novaConta();
-	printf("\nA altura da arvore é: %d", calcAltura(raiz));
+	ContaB * conta = buscaConta(raiz);
 	
 }
 
@@ -254,7 +255,7 @@ ContaB * buscaConta(No *nodo){
 		int codigo;
 		printf("\nInsira o codigo da conta: ");
 		scanf("%d", &codigo);
-		
+				
 		return buscar(nodo, codigo);			
 	}	
 }
@@ -266,8 +267,8 @@ ContaB * buscar(No *nodo, int codigo){
     	return NULL;
 	} 
 	else if (nodo->conta->codigo == codigo){
-      printf("\nConta encontrada!\n");
-      return nodo->conta;
+    	printf("\nConta encontrada!\n");
+      	return nodo->conta;
 	} 
 	else if (nodo->conta->codigo > codigo){
 		buscar(nodo->esq, codigo);
@@ -283,8 +284,44 @@ int calcAltura (No * raiz) {
    else {
       int he = calcAltura(raiz->esq);
       int hd = calcAltura(raiz->dir);
-      if (he < hd) return hd + 1;
-      else return he + 1;
+      return hd > he ? (hd +1)  : (he + 1);
    }
+}
+
+int nivelConta(No * raiz, ContaB * conta){
+	if (raiz == NULL) {
+	  printf("Árvore vazia!!!\n");
+	  return -1;
+	}
+	else {
+		No * aux = raiz;
+		int h = 0;
+		while(aux){
+			if(aux->conta->codigo > conta->codigo){
+				aux = aux->esq;
+				h++;
+			}
+			else if (aux->conta->codigo < conta->codigo){
+				aux = aux->dir;
+				h++;
+			}
+			else {
+				return h+1;
+			}
+		}
+   }
+   return -1;
+}
+
+int verificarEstBinaria(No * raiz){
+	if (raiz){
+		if((!raiz->dir && raiz->esq) || (raiz->dir && !raiz->esq)){ // se possui apenas um filho, pare.
+			return 0;
+		}else{ // se possui dois filhos, continue..
+			return verificarEstBinaria(raiz->esq) && verificarEstBinaria(raiz->dir);
+		}
+	}
+	else
+		return 1;
 }
 
