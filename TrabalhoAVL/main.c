@@ -31,8 +31,15 @@ void printaCrescente(No *nodo);
 void printaDecrescente(No *nodo);
 ContaB * buscaConta(No *nodo);
 ContaB * buscar(No * nodo, int codigo);
+No * rotLL(No * raiz);
+No * rotRR(No * raiz);
+No * balanceia(No * raiz);
+void exibirNiveis(No * raiz);
+void exibirNiveisB(No * raiz, int atual, int cont);
 
 main(void){
+	raiz = carregarArqs(raiz);
+	exibirNiveis(raiz);
 }
 
 void limparTela(){
@@ -52,6 +59,7 @@ No * iniciarNo(ContaB * conta){
     novo->pai = NULL;
     novo->esq = NULL;
     novo->dir = NULL;
+    novo->h = 0;
 
     return novo;
 }
@@ -69,7 +77,7 @@ ContaB * preencherConta(ContaB * conta){
 
 int calcAltura (No * raiz) {
    if (!raiz) 
-      return -1; // altura da árvore vazia
+      return -1; // altura da Ã¡rvore vazia
    else {
       int he = calcAltura(raiz->esq);
       int hd = calcAltura(raiz->dir);
@@ -78,22 +86,29 @@ int calcAltura (No * raiz) {
 }
 
 No * insereNodo(No * raiz, ContaB * conta){
-   
-     if(raiz == NULL){ // raiz vazia
+	
+	if(raiz == NULL){ // raiz vazia
 		raiz = iniciarNo(conta);
 		raiz->h = 0;
+		No * aux1 = raiz;	
+		while(aux1){
+	        aux1 = balanceia(aux1);
+	        aux1 = aux1->pai;
+    	}
 	} 
-	else if(conta->codigo < raiz->conta->codigo){ // conta será adicionada a esquerda
+	else if(conta->codigo < raiz->conta->codigo){ // conta serÃ¡ adicionada a esquerda
 		raiz->esq = insereNodo(raiz->esq,conta);
 		raiz->esq->pai = raiz;
 	} 
-	else { // conta será adicionada a direita
+	else { // conta serÃ¡ adicionada a direita
 	    raiz->dir = insereNodo(raiz->dir, conta);
 		raiz->dir->pai = raiz;
 	}
-	raiz = calcAltura(raiz);
-	raiz = balanceia(raiz);
+	raiz->h = calcAltura(raiz);
+    
+
 	
+
 	return raiz;	
 }
 
@@ -107,24 +122,24 @@ No * removeNodo(No * raiz, ContaB * conta){
 	else if (raiz->conta->codigo < conta->codigo){		// desce pela direita		
 		raiz->dir = removeNodo(raiz->dir, conta);
 	} 
-	else {					// Encontrou Nó a ser removido...
-		if(raiz->dir == NULL && raiz->esq == NULL){			// Nó a ser removido NÃO tem FILHOS.
+	else {					// Encontrou NÃ³ a ser removido...
+		if(raiz->dir == NULL && raiz->esq == NULL){			// NÃ³ a ser removido NÃƒO tem FILHOS.
 			free(raiz);
 			raiz = NULL;
 		} 
-		else if(raiz->esq == NULL){			// Nó a ser removido tem apenas FILHO à DIREITA.
+		else if(raiz->esq == NULL){			// NÃ³ a ser removido tem apenas FILHO Ã  DIREITA.
 			No *temporario = raiz;
 			raiz->dir->pai = raiz->pai;
 			raiz = raiz->dir;
 			free(temporario);
 		} 
-		else if(raiz->dir == NULL){			//Nó a ser removido tem apenas FILHO à ESQUERDA.
+		else if(raiz->dir == NULL){			//NÃ³ a ser removido tem apenas FILHO Ã  ESQUERDA.
 			No *temporario = raiz;
 			raiz->esq->pai = raiz->pai;
 			raiz = raiz->esq;
 			free(temporario);
 		} 
-		else {			// Nó tem dois FILHOS.
+		else {			// NÃ³ tem dois FILHOS.
 			No *aux = raiz->esq;
 			while (aux->dir){ // maior nodo a direita
 				aux = aux->dir;
@@ -260,7 +275,7 @@ ContaB * buscaConta(No *nodo){
 ContaB * buscar(No *nodo, int codigo){
         	
     if (nodo == NULL){
-    	printf("\nConta não encontrada!\n");
+    	printf("\nConta nÃ£o encontrada!\n");
     	return NULL;
 	} 
 	else if (nodo->conta->codigo == codigo){
@@ -279,18 +294,22 @@ No * rotRR(No * raiz){
 	No * aux = raiz->esq;
 	
 	raiz->esq = aux->dir;
-	
-	if(aux->dir)
-		aux->dir->pai = raiz;
-	
 	aux->dir = raiz;
-	aux->pai = raiz->pai;
 	
-	if(raiz->pai){
-		if (raiz->pai->esq == raiz)	
-			raiz->pai->esq = aux;
+	if(raiz->esq)
+		raiz->esq->pai = raiz;
+	
+	aux->pai = raiz->pai;
+	raiz->pai = aux;
+	
+	if (raiz == aux)
+		raiz = aux;
+	
+	if(aux->pai){
+		if(aux->h < aux->pai->h)
+			aux->pai->esq = aux;
 		else
-			raiz->pai->dir = aux;	
+			aux->pai->dir = aux;	
 	}
 	raiz->pai = aux;
 	
@@ -304,18 +323,22 @@ No * rotLL(No * raiz){
 	No * aux = raiz->dir;
 	
 	raiz->dir = aux->esq;
-	
-	if(aux->esq)
-		aux->esq->pai = raiz;
-	
 	aux->esq = raiz;
-	aux->pai = raiz->pai;
 	
-	if(raiz->pai){
-		if (raiz->pai->dir == raiz)	
-			raiz->pai->dir = aux;
+	if(raiz->dir)
+		raiz->dir->pai = raiz;
+	
+	aux->pai = raiz->pai;
+	raiz->pai = aux;
+	
+	if (raiz == aux)
+		raiz = aux;
+	
+	if(aux->pai){
+		if(aux->h < aux->pai->h)
+			aux->pai->esq = aux;
 		else
-			raiz->pai->esq = aux;	
+			aux->pai->dir = aux;	
 	}
 	raiz->pai = aux;
 	
@@ -327,20 +350,47 @@ No * rotLL(No * raiz){
 
 No * balanceia(No * raiz){
 	if(raiz->h < -1){
-        if(raiz->esq->h > 0){
+		if(raiz->esq->h > 0){
             raiz->esq = rotLL(raiz->esq);
         }
 
         raiz = rotRR(raiz->dir);
     }
-
+	
     else if(raiz->h > 1){
-        if(raiz->dir->h < 0){
+		if(raiz->dir->h < 0){
             raiz->dir = rotRR(raiz->dir);
         }
-
         raiz = rotLL(raiz);
     }
-
     return raiz;
 }
+
+void exibirNiveis(No * aux){
+    int i;
+
+    for(i = 0; i <= calcAltura(raiz); i++){
+        printf("Nivel %d\n", i);
+        exibirNiveisB(raiz, i, 0);
+        printf("\n\n");
+    }
+}
+
+void exibirNiveisB(No * aux, int atual, int cont){
+    if(!raiz){
+        printf("A arvore esta vazia!");
+        getchar();
+        return;
+    }
+
+    if(aux){
+        exibirNiveisB(aux->esq, atual, cont+1);
+
+        if(atual == cont){
+            printf("%d ", aux->conta->codigo);
+        }
+
+        exibirNiveisB(aux->dir, atual, cont+1);
+    }
+}
+
