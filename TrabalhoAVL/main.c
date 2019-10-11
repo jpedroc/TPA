@@ -20,9 +20,10 @@ typedef struct No{
 No * raiz;
 
 void limparTela();
+void menu();
 ContaB * novaConta();
 No * iniciarNo(ContaB * conta);
-ContaB * preencherConta(ContaB * conta);
+ContaB * preencherConta();
 int calcAltura (No * raiz);
 No * insereNodo(No * raiz, ContaB * conta);
 No * removeNodo(No * raiz, ContaB * conta);
@@ -31,20 +32,61 @@ void printaCrescente(No *nodo);
 void printaDecrescente(No *nodo);
 ContaB * buscaConta(No *nodo);
 ContaB * buscar(No * nodo, int codigo);
-No * rotLL(No * raiz);
-No * rotRR(No * raiz);
+No * rotLL(No * nodo);
+No * rotRR(No * nodo);
 No * balanceia(No * raiz);
 void exibirNiveis(No * raiz);
 void exibirNiveisB(No * raiz, int atual, int cont);
 
 main(void){
 	raiz = carregarArqs(raiz);
-	exibirNiveis(raiz);
+	ContaB * conta;
+	int opt;
+	do{
+		int aux1;
+		menu();
+		scanf("%d", &opt);
+		
+		switch(opt){
+			case 1:
+				conta = preencherConta();
+				raiz = insereNodo(raiz, conta);
+				limparTela();
+				break;
+			case 2:
+				conta = buscaConta(raiz);
+				printf("\nCodigo: %d  -  Nome: %s  -  Saldo: %.2f\n", conta->codigo, conta->nome, conta->saldo);
+				limparTela();
+				break;
+			case 3: 
+				conta = buscaConta(raiz);
+				raiz = removeNodo(raiz, conta);
+				limparTela();
+				break;
+			case 4:
+				exibirNiveis(raiz);
+				limparTela();
+				break;
+			case 0:
+				exit(1);
+			default:
+				printf("\nOpcao inválida!!\n");
+		}
+	}while(opt);
 }
 
 void limparTela(){
 	system("pause");
 	system("cls");
+}
+
+void menu(){
+	printf("1 - Inserir\n"\
+		   "2 - Pesquisar\n"\
+		   "3 - Excluir\n"\
+		   "4 - Listar por nivel\n"\
+		   "0 - Sair\n"\
+		   "Escolha sua opcao: ");
 }
 
 ContaB * novaConta(){
@@ -64,7 +106,8 @@ No * iniciarNo(ContaB * conta){
     return novo;
 }
 
-ContaB * preencherConta(ContaB * conta){
+ContaB * preencherConta(){
+	ContaB * conta = novaConta();
 	printf("\nCodigo: ");
 	scanf("%d", &conta->codigo);
 	printf("\nNome: ");
@@ -77,7 +120,7 @@ ContaB * preencherConta(ContaB * conta){
 
 int calcAltura (No * raiz) {
    if (!raiz) 
-      return -1; // altura da Ã¡rvore vazia
+      return 0; // altura da Ã¡rvore vazia
    else {
       int he = calcAltura(raiz->esq);
       int hd = calcAltura(raiz->dir);
@@ -87,14 +130,19 @@ int calcAltura (No * raiz) {
 
 No * insereNodo(No * raiz, ContaB * conta){
 	
-	if(raiz == NULL){ // raiz vazia
+	if(!raiz){ // raiz vazia
 		raiz = iniciarNo(conta);
 		raiz->h = 0;
 		No * aux1 = raiz;	
+	
 		while(aux1){
-	        aux1 = balanceia(aux1);
+			aux1->h = calcAltura(aux1->esq) - calcAltura(aux1->dir);
+			
+			if(aux1->h > 1 || aux1->h < -1){
+				aux1 = balanceia(aux1);
+			}
 	        aux1 = aux1->pai;
-    	}
+		}
 	} 
 	else if(conta->codigo < raiz->conta->codigo){ // conta serÃ¡ adicionada a esquerda
 		raiz->esq = insereNodo(raiz->esq,conta);
@@ -104,9 +152,9 @@ No * insereNodo(No * raiz, ContaB * conta){
 	    raiz->dir = insereNodo(raiz->dir, conta);
 		raiz->dir->pai = raiz;
 	}
-	raiz->h = calcAltura(raiz);
     
-
+    
+	
 	
 
 	return raiz;	
@@ -127,13 +175,13 @@ No * removeNodo(No * raiz, ContaB * conta){
 			free(raiz);
 			raiz = NULL;
 		} 
-		else if(raiz->esq == NULL){			// NÃ³ a ser removido tem apenas FILHO Ã  DIREITA.
+		else if(raiz->esq == NULL){			// NÃ³ a ser removido tem apenas FILHO Ã  DIREITA.
 			No *temporario = raiz;
 			raiz->dir->pai = raiz->pai;
 			raiz = raiz->dir;
 			free(temporario);
 		} 
-		else if(raiz->dir == NULL){			//NÃ³ a ser removido tem apenas FILHO Ã  ESQUERDA.
+		else if(raiz->dir == NULL){			//NÃ³ a ser removido tem apenas FILHO Ã  ESQUERDA.
 			No *temporario = raiz;
 			raiz->esq->pai = raiz->pai;
 			raiz = raiz->esq;
@@ -287,83 +335,79 @@ ContaB * buscar(No *nodo, int codigo){
 	} else {
 		buscar(nodo->dir, codigo);
 	}
-	
 }
 
-No * rotRR(No * raiz){
-	No * aux = raiz->esq;
-	
-	raiz->esq = aux->dir;
-	aux->dir = raiz;
-	
-	if(raiz->esq)
-		raiz->esq->pai = raiz;
-	
-	aux->pai = raiz->pai;
-	raiz->pai = aux;
-	
-	if (raiz == aux)
+No * rotRR(No * nodo){
+	No * aux = nodo->esq;
+	nodo->esq = aux->dir;
+	aux->dir = nodo;
+	if(nodo->esq)
+		nodo->esq->pai = nodo;
+	aux->pai = nodo->pai;
+	nodo->pai = aux;
+	if (raiz == nodo)
 		raiz = aux;
-	
 	if(aux->pai){
 		if(aux->h < aux->pai->h)
 			aux->pai->esq = aux;
 		else
 			aux->pai->dir = aux;	
 	}
-	raiz->pai = aux;
+	nodo->pai = aux;
 	
 	aux->h = calcAltura(aux->esq) - calcAltura(aux->dir);
-	raiz->h = calcAltura(raiz->esq) - calcAltura(raiz->dir);
+	nodo->h = calcAltura(nodo->esq) - calcAltura(nodo->dir);
 	
 	return aux;
 }
 
-No * rotLL(No * raiz){
-	No * aux = raiz->dir;
+No * rotLL(No * nodo){
+	No * dir = nodo->dir;
 	
-	raiz->dir = aux->esq;
-	aux->esq = raiz;
+	nodo->dir = dir->esq;
 	
-	if(raiz->dir)
-		raiz->dir->pai = raiz;
+	dir->esq = nodo;
 	
-	aux->pai = raiz->pai;
-	raiz->pai = aux;
-	
-	if (raiz == aux)
-		raiz = aux;
-	
-	if(aux->pai){
-		if(aux->h < aux->pai->h)
-			aux->pai->esq = aux;
-		else
-			aux->pai->dir = aux;	
+	if(nodo->dir){
+		nodo->dir->pai = nodo;
 	}
-	raiz->pai = aux;
+	dir->pai = nodo->pai;
+	nodo->pai = dir;
+	if (raiz == nodo){
+		raiz = dir;
+	}
+	if(dir->pai){
+		if(dir->h < dir->pai->h){
+			dir->pai->esq = dir;
+		}
+		else{
+			dir->pai->dir = dir;	
+		}
+	}
+	nodo->pai = dir;
 	
-	aux->h = calcAltura(aux->esq) - calcAltura(aux->dir);
-	raiz->h = calcAltura(raiz->esq) - calcAltura(raiz->dir);
+	dir->h = calcAltura(dir->esq) - calcAltura(dir->dir);
+	nodo->h = calcAltura(nodo->esq) - calcAltura(nodo->dir);
 	
-	return aux;
+	return dir;
 }
 
-No * balanceia(No * raiz){
-	if(raiz->h < -1){
-		if(raiz->esq->h > 0){
-            raiz->esq = rotLL(raiz->esq);
-        }
 
-        raiz = rotRR(raiz->dir);
+No * balanceia(No * aux){
+	if(aux->h < -1){
+		if(aux->esq && aux->esq->h > 0){
+            aux->esq = rotLL(aux->esq);
+        }        
+        aux = rotRR(aux->dir);
     }
 	
-    else if(raiz->h > 1){
-		if(raiz->dir->h < 0){
-            raiz->dir = rotRR(raiz->dir);
+    else if(aux->h > 1){
+		if(aux->dir && aux->dir->h < 0){
+            aux->dir = rotRR(aux->dir);
         }
-        raiz = rotLL(raiz);
+        aux = rotLL(aux);
     }
-    return raiz;
+    return aux;
 }
 
 void exibirNiveis(No * aux){
@@ -393,4 +437,3 @@ void exibirNiveisB(No * aux, int atual, int cont){
         exibirNiveisB(aux->dir, atual, cont+1);
     }
 }
-
